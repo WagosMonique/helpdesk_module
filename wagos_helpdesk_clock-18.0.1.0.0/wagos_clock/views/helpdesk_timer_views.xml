@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add timer controls to helpdesk ticket form -->
+    <record id="helpdesk_ticket_view_form_timer" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.form.timer</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Add timer controls in header -->
+            <xpath expr="//div[@class='oe_button_box']" position="inside">
+                <button name="action_start_ticket_timer" 
+                        type="object" 
+                        class="oe_stat_button"
+                        attrs="{'invisible': [('has_running_timer', '=', True)]}"
+                        icon="fa-play">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Start</span>
+                        <span class="o_stat_text">Timer</span>
+                    </div>
+                </button>
+                
+                <button name="action_stop_ticket_timer" 
+                        type="object" 
+                        class="oe_stat_button"
+                        attrs="{'invisible': [('has_running_timer', '=', False)]}"
+                        icon="fa-stop">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Stop</span>
+                        <span class="o_stat_text">Timer</span>
+                    </div>
+                </button>
+                
+                <button name="%(helpdesk.helpdesk_ticket_action_analysis_timesheet)d" 
+                        type="action" 
+                        class="oe_stat_button" 
+                        icon="fa-clock-o">
+                    <field name="total_logged_time" widget="float_time"/>
+                    <span class="o_stat_text">Hours</span>
+                </button>
+            </xpath>
+            
+            <!-- Add hidden fields for computation -->
+            <xpath expr="//sheet" position="inside">
+                <field name="has_running_timer" invisible="1"/>
+                <field name="current_timer_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Enhanced timesheet tree view within helpdesk tickets -->
+    <record id="helpdesk_timesheet_tree_timer" model="ir.ui.view">
+        <field name="name">helpdesk.timesheet.tree.timer</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="helpdesk_timesheet.timesheet_view_tree_user_helpdesk"/>
+        <field name="arch" type="xml">
+            <!-- Add timer fields -->
+            <xpath expr="//field[@name='date']" position="after">
+                <field name="timer_start"/>
+                <field name="timer_duration" widget="float_time" string="Timer Duration"/>
+                <field name="is_timer_running" invisible="1"/>
+            </xpath>
+            
+            <!-- Add timer control buttons -->
+            <xpath expr="//field[@name='unit_amount']" position="after">
+                <button name="action_start_timer" 
+                        type="object" 
+                        string="Start" 
+                        icon="fa-play"
+                        attrs="{'invisible': [('is_timer_running', '=', True)]}"
+                        class="btn-success"/>
+                        
+                <button name="action_stop_timer" 
+                        type="object" 
+                        string="Stop" 
+                        icon="fa-stop"
+                        attrs="{'invisible': [('is_timer_running', '=', False)]}"
+                        class="btn-danger"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Timer status indicator in timesheet form -->
+    <record id="helpdesk_timesheet_form_timer" model="ir.ui.view">
+        <field name="name">helpdesk.timesheet.form.timer</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='timesheet_group']" position="after">
+                <group name="timer_group" string="Timer Information" attrs="{'invisible': [('timer_start', '=', False)]}">
+                    <field name="timer_start"/>
+                    <field name="timer_stop"/>
+                    <field name="timer_duration" widget="float_time"/>
+                    <field name="is_timer_running"/>
+                    <field name="break_time" widget="float_time"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Quick timer widget for helpdesk dashboard -->
+    <record id="helpdesk_timer_dashboard" model="ir.ui.view">
+        <field name="name">helpdesk.timer.dashboard</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='oe_kanban_bottom_right']" position="inside">
+                <span attrs="{'invisible': [('has_running_timer', '=', False)]}" 
+                      class="badge badge-success">
+                    <i class="fa fa-clock-o"/> Timer Running
+                </span>
+            </xpath>
+        </field>
+    </record>
+</odoo>
